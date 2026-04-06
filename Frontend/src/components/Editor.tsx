@@ -1,13 +1,22 @@
-import { Editor } from "@monaco-editor/react";
-import { useState } from "react";
+import { Editor  }  from "@monaco-editor/react";
+import type {editor} from "@monaco-editor/react";
+import axios from "axios";
+
+import { useEffect, useRef, useState } from "react";
 
 export default function CodeEditor(){
-    const [inputedit , setinputedit] = useState("");
+    const editorinput = useRef<editor.IStandaloneCodeEditor | null> (null);
+    
+    const EditorDidMount = (editor : editor.IStandaloneCodeEditor )=>{
+        editorinput.current = editor; 
+    }
     
     return (
         <>
         <h1> lovely codeditor</h1>
-            <Editor  defaultLanguage="javascript" defaultValue="You can code here in JavaScript"/>
+            <Editor 
+            onMount={EditorDidMount}
+            defaultLanguage="javascript" defaultValue="You can code here in JavaScript"/>
         </>
     )
 

@@ -1,9 +1,9 @@
 import Dashboard from "./Pages/Dashboard";
 
-function App(){
+function App() {
   return (
     <>
-      <Dashboard/>
+      <Dashboard />
     </>
   )
 }

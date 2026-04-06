@@ -1,7 +1,10 @@
 export default function Videostream(){
     return (
         <>
-        <h1> here we will be streaming rhe video boyss</h1>
+        <div className="h-3/4">
+            <h1> here we will be streaming rhe video boyss</h1>
+        </div>
+
         </>
     )
 
