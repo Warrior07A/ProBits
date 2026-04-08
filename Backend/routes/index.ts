@@ -119,14 +119,15 @@ app.put("/user/join", authMiddleware(), async (req: Request, res: Response) => {
         id: roomId
       }
     })
-
+    console.log(isRoomFull);
+    console.log(id);
     if (isRoomFull?.student_id == id || isRoomFull?.teacher_id == id){
       return res.status(200).json({
         msg : "WELCOME BACK ",
         student_id : isRoomFull.student_id
       })
     }
-    if (isRoomFull?.student_id && isRoomFull.student_id) {
+    if (isRoomFull?.student_id != null && isRoomFull.student_id != null) {
       return ferr("Room is already Full", 401, res);
     }
     const roomfind = await prisma.rooms.update({

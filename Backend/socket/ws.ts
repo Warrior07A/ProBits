@@ -2,38 +2,34 @@ import type { Request } from "express";
 import { WebSocket, WebSocketServer } from "ws";
 import axios from "axios";
 import url from "url"
+import { measureMemory } from "vm";
 
 const wss = new WebSocketServer({ port: 8080 });
 
-// type IncomingData = {
-//     type : string,
-//     teacher_id : string,
-//     room_id : string
-// }
-
 type obj = {
-    teacher_id: string,
     teacher_ws: WebSocket,
-    student_id?: string,
     student_ws?: WebSocket
 }
 
-let memory: Map<string, obj> = new Map();
 
+let memory: Map<string, Set<WebSocket>> = new Map();
+
+let no = 1;
 wss.on("connection", (ws: WebSocket, req: Request) => {
-    console.log("connection made");
+    console.log("connection no." + no + "made");
+    no++;
     ws.on("message", (data: any) => {
-        console.log("message received");
+        // console.log("message received");
         data = JSON.parse(data);
-        console.log(data);
+        // console.log(data);
         if (data.type == "CREATE_ROOM") {
             let obj = {
-                teacher_id: data.teacher_id,
                 teacher_ws: ws
             }
-            memory.set(data.room_id, obj);
+            memory.set(data.room_id , new Set<WebSocket> ());
+            memory.get(data.room_id)!.add(ws);
+
             console.log("Room create logic reached");
-            console.log(memory);
             ws.send(
                 JSON.stringify(
                     {
@@ -46,15 +42,50 @@ wss.on("connection", (ws: WebSocket, req: Request) => {
         else if (data.type == "JOIN_ROOM"){
             const roomexist = memory.get(data.room_id);
             if (roomexist){
-                roomexist["student_id"] = data.student_id;
-                roomexist["student_ws"] = ws;
+                roomexist.add(ws);
+                ws.send(
+                    JSON.stringify({
+                        type : "updated websockets", 
+                        payload : {}
+                    })
+                )
+                console.log(memory.size)
+                console.log("hello");
             }
-            ws.send(
-                JSON.stringify({
-                    type : "updated websockets", 
-                    payload : {}
-                })
-            )
+            else{
+                ws.send("Room doesnot exist");
+            }
+            console.log(memory.get(data.roomid)!.size);
+        }
+        else if (data.type == "CODE_SEND"){
+            let roomid = data.payload.room_id;
+            let CurrRoom = memory.get(roomid);
+            if (CurrRoom){
+                let roomid = data.payload.room_id;
+                    let CurrRoom = memory.get(roomid);
+                    if (CurrRoom){
+                        CurrRoom.forEach((ws_conn)=>{
+                            if (ws_conn != ws){
+                                ws_conn.send(JSON.stringify({
+                                    type : "CODE_UPDATE",
+                                    payload:{
+                                        changes : data.payload.changes
+                                    }
+                                }))
+                            }
+                        })}
+                    }
+            else{
+                ws.send("NO SUCH ROOM FOUND");
+                console.log("not found");
+                // console.log(memory);
+            }
+            console.log(memory.get(data.roomid)!.size);
+        }
+        else {
+            ws.send(JSON.stringify({
+                msg : "this is out of my bounds in websockets brooo" 
+            }))
         }
     })
 }
