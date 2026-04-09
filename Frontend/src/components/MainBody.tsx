@@ -3,6 +3,8 @@ import Sidebar from "./Sidebar";
 import Videostream from "./Videostream";
 import axios from "axios";
 import { Editor } from "@monaco-editor/react";
+import Terminal from "terminal-in-react";
+import XTerminal from "./Termial";
 const ws = new WebSocket("ws://localhost:8080");
 
 export default function MainBody() {
@@ -11,8 +13,8 @@ export default function MainBody() {
     let [JoinRoomId, SetJoinRoomId] = useState("");
     let activeRoom = useRef("");
     const editorinput = useRef<string | null>(null);
-    const [CommonValue , SetCommonValue] = useState("");
-    
+    const [CommonValue, SetCommonValue] = useState("");
+
     useEffect(() => {
         activeRoom.current = roomid
     }, [roomid])
@@ -59,7 +61,7 @@ export default function MainBody() {
             alert("Welcome back");
         }
         ws.onmessage = (event) => {
-            let data = JSON.parse(event.data);            
+            let data = JSON.parse(event.data);
             if (data.type == "CODE_UPDATE") {
                 SetCommonValue(data.payload.changes);
                 console.log(editorinput);
@@ -71,9 +73,9 @@ export default function MainBody() {
         }
 
     }
-    
+
     useEffect(() => {
-        
+
         async function dbcall() {
             try {
                 const CreateRoom = await axios.post("http://localhost:3001/teacher/createroom", {}, {
@@ -111,7 +113,7 @@ export default function MainBody() {
                 }
             } catch (e) {
                 // if (e.response.status == 401) {
-                    return alert("ADMIN ACCESS ONLY" + e);
+                return alert("ADMIN ACCESS ONLY" + e);
                 // }
             }
         }
@@ -129,12 +131,23 @@ export default function MainBody() {
                         <Sidebar />
                     </div>
 
-                    <div className="h-screen grow-4 w-10 ">
-                        <Editor
-                            onMount={EditorDidMount}
-                            defaultLanguage="javascript" defaultValue="You can code here in JavaScript"
-                            value={CommonValue} />
-                    </div>
+                    {/* <div className="flex"> */}
+                        <div className="h-screen grow-4 w-10 flex-col ">
+                            <Editor
+                                onMount={EditorDidMount}
+                                defaultLanguage="javascript" defaultValue="You can code here in JavaScript"
+                                value={CommonValue}
+                                height = "80vh"
+                                theme = 'hc-black'
+                            />
+                            <div>
+                                button comes here
+                            </div>
+                            <div>
+                                <XTerminal/>
+                            </div>
+                        </div>
+                    {/* </div> */}
 
                 </div>
                 <div className="h-screen w-1/4 bg-orange-300">

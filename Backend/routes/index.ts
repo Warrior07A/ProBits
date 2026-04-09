@@ -31,9 +31,9 @@ export function authMiddleware() {
       req.id = payload.id;
       req.role = payload.role;
       next();
-    } catch (e){
+    } catch (e) {
       console.log(e.message);
-      return ferr("UNAUTHORIZED" + e.message , 401, res);
+      return ferr("UNAUTHORIZED" + e.message, 401, res);
     }
   };
 }
@@ -96,57 +96,57 @@ app.post("/teacher/createroom", authMiddleware(), async (req: Request, res: Resp
       status: " room has been crrated successfully",
       success: true,
       roomid: roomadd.id,
-      teacher_id : roomadd.teacher_id
+      teacher_id: roomadd.teacher_id
     })
     console.log(roomadd);
   }
 })
 
 app.put("/user/join", authMiddleware(), async (req: Request, res: Response) => {
-    const url = req.url
-    console.log(url);
-    const roomId = req.query.roomId as string;
-    if (!roomId) {
-      return ferr("ROOMID MISSING", 403, res);
+  const url = req.url
+  console.log(url);
+  const roomId = req.query.roomId as string;
+  if (!roomId) {
+    return ferr("ROOMID MISSING", 403, res);
+  }
+  let id = req.id;
+  let role = req.role;
+  if (!id || !role) {
+    return ferr("ID OR ROLE MISSING", 404, res);
+  }
+  const isRoomFull = await prisma.rooms.findFirst({
+    where: {
+      id: roomId
     }
-    let id = req.id;
-    let role = req.role;
-    if (!id || !role) {
-      return ferr("ID OR ROLE MISSING", 404, res);
-    }
-    const isRoomFull = await prisma.rooms.findFirst({
-      where: {
-        id: roomId
-      }
-    })
-    console.log(isRoomFull);
-    console.log(id);
-    if (isRoomFull?.student_id == id || isRoomFull?.teacher_id == id){
-      return res.status(200).json({
-        msg : "WELCOME BACK ",
-        student_id : isRoomFull.student_id
-      })
-    }
-    if (isRoomFull?.student_id != null && isRoomFull.student_id != null) {
-      return ferr("Room is already Full", 401, res);
-    }
-    const roomfind = await prisma.rooms.update({
-      where: {
-        id: roomId
-      },
-      data: {
-        student_id: id
-      }
-    })
-    if (!roomfind) {
-      return ferr("no such room exists", 404, res);
-    }
-    return res.status(201).json({
-      msg: "record has been updated successfully",
-      success: true,
-      student_id : roomfind.student_id  
-    })
   })
+  console.log(isRoomFull);
+  console.log(id);
+  if (isRoomFull?.student_id == id || isRoomFull?.teacher_id == id) {
+    return res.status(200).json({
+      msg: "WELCOME BACK ",
+      student_id: isRoomFull.student_id
+    })
+  }
+  if (isRoomFull?.student_id != null && isRoomFull.student_id != null) {
+    return ferr("Room is already Full", 401, res);
+  }
+  const roomfind = await prisma.rooms.update({
+    where: {
+      id: roomId
+    },
+    data: {
+      student_id: id
+    }
+  })
+  if (!roomfind) {
+    return ferr("no such room exists", 404, res);
+  }
+  return res.status(201).json({
+    msg: "record has been updated successfully",
+    success: true,
+    student_id: roomfind.student_id
+  })
+})
 
 
 // ── start ────────────────────────────────────────────────────────────────────
