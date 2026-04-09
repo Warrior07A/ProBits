@@ -58,10 +58,22 @@ export default function MainBody() {
             console.log(roomid);
             alert("Welcome back");
         }
+        ws.onmessage = (event) => {
+            let data = JSON.parse(event.data);            
+            if (data.type == "CODE_UPDATE") {
+                SetCommonValue(data.payload.changes);
+                console.log(editorinput);
+            }
+            else {
+                console.log("erro while recieving data from ws in FE");
+            }
+
+        }
 
     }
-
+    
     useEffect(() => {
+        
         async function dbcall() {
             try {
                 const CreateRoom = await axios.post("http://localhost:3001/teacher/createroom", {}, {
