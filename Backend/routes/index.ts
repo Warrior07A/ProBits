@@ -25,15 +25,15 @@ export function authMiddleware() {
     // console.log(req.headers.authorization);
     try {
       const token = req.headers.authorization?.split(" ")[1];
-      // console.log(token);
-      if (!token) return ferr("UNAUTHORIZED", 401, res);
+      console.log(token);
+      if (!token) return ferr("UNAUTHORIZED :INVALID TOKEN", 401, res);
       const payload = jwt.verify(token, SECRET) as JwtPayload;
       req.id = payload.id;
       req.role = payload.role;
       next();
     } catch (e){
       console.log(e.message);
-      return ferr("UNAUTHORIZED", 401, res);
+      return ferr("UNAUTHORIZED" + e.message , 401, res);
     }
   };
 }

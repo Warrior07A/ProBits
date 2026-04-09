@@ -1,8 +1,5 @@
 import type { Request } from "express";
 import { WebSocket, WebSocketServer } from "ws";
-import axios from "axios";
-import url from "url"
-import { measureMemory } from "vm";
 
 const wss = new WebSocketServer({ port: 8080 });
 
@@ -55,7 +52,7 @@ wss.on("connection", (ws: WebSocket, req: Request) => {
             else{
                 ws.send("Room doesnot exist");
             }
-            console.log(memory.get(data.roomid)!.size);
+            // console.log(memory.get(data.roomid)!.size);
         }
         else if (data.type == "CODE_SEND"){
             let roomid = data.payload.room_id;
@@ -80,13 +77,18 @@ wss.on("connection", (ws: WebSocket, req: Request) => {
                 console.log("not found");
                 // console.log(memory);
             }
-            console.log(memory.get(data.roomid)!.size);
+            console.log(memory.size);
+            // console.log(memory.get(data.roomid)!.size);
         }
         else {
             ws.send(JSON.stringify({
                 msg : "this is out of my bounds in websockets brooo" 
             }))
         }
+    })
+    ws.on("close", ()=>{
+        const roomId =  (ws).roomId;
+        console.log("onclosing roomid is " + roomId); 
     })
 }
 

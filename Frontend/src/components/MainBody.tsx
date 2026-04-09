@@ -11,15 +11,14 @@ export default function MainBody() {
     let [JoinRoomId, SetJoinRoomId] = useState("");
     let activeRoom = useRef("");
     const editorinput = useRef<string | null>(null);
-    const [CommonValue, SetCommonValue] = useState("");
-
+    const [CommonValue , SetCommonValue] = useState("");
+    
     useEffect(() => {
         activeRoom.current = roomid
     }, [roomid])
     useEffect(() => {
         activeRoom.current = JoinRoomId
     }, [JoinRoomId])
-
 
     const EditorDidMount = (editor: editor.IStandaloneCodeEditor) => {
         editor.onDidChangeModelContent((event) => {
@@ -99,9 +98,9 @@ export default function MainBody() {
                     }
                 }
             } catch (e) {
-                if (e.response.status == 401) {
-                    return alert("ADMIN ACCESS ONLY");
-                }
+                // if (e.response.status == 401) {
+                    return alert("ADMIN ACCESS ONLY" + e);
+                // }
             }
         }
         if (trigger) {
