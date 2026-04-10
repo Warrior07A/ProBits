@@ -3,8 +3,8 @@ import Sidebar from "./Sidebar";
 import Videostream from "./Videostream";
 import axios from "axios";
 import { Editor } from "@monaco-editor/react";
-import Terminal from "terminal-in-react";
 import XTerminal from "./Termial";
+
 const ws = new WebSocket("ws://localhost:8080");
 
 export default function MainBody() {
@@ -14,6 +14,8 @@ export default function MainBody() {
     let activeRoom = useRef("");
     const editorinput = useRef<string | null>(null);
     const [CommonValue, SetCommonValue] = useState("");
+    const [TOutput, setTOutput] = useState("");
+
 
     useEffect(() => {
         activeRoom.current = roomid
@@ -21,6 +23,37 @@ export default function MainBody() {
     useEffect(() => {
         activeRoom.current = JoinRoomId
     }, [JoinRoomId])
+
+
+    async function compileCode() {
+        console.log(editorinput.current);
+        console.log(CommonValue);
+        let Compilereq = await axios.post("https://judge0.nagmaniupadhyay.com.np/submissions?wait=true", {
+            "language_id": 63,
+            "source_code": editorinput.current || ""
+        })
+        let FinalCodeOutput = "";
+        if (Compilereq.data.status.id == 3) {
+            console.log(Compilereq.data.stdout);
+            FinalCodeOutput = Compilereq.data.stdout;
+        }
+        else {
+            FinalCodeOutput = Compilereq.data.status.description;
+        }
+
+        setTOutput(FinalCodeOutput);
+        console.log(Compilereq);
+
+        ws.send(JSON.stringify({
+            type: "TERMINAL_CODE",
+            payload: {
+                code: FinalCodeOutput,
+                room_id: activeRoom.current
+            }
+        }))
+
+        console.log("ran here");
+    }
 
     const EditorDidMount = (editor: editor.IStandaloneCodeEditor) => {
         editor.onDidChangeModelContent((event) => {
@@ -60,22 +93,34 @@ export default function MainBody() {
             console.log(roomid);
             alert("Welcome back");
         }
+
+    }
+    //useEffect for attaching ws listener for all users irrespective of their way of entering in a room.
+    useEffect(()=>{
         ws.onmessage = (event) => {
+            // console.log(event);
             let data = JSON.parse(event.data);
-            if (data.type == "CODE_UPDATE") {
+            // console.log(data);
+            if (data.type == "ROOM_CREATED") {
+                alert("room has been created");
+                settrigger(trigger => false);
+                return;
+            }
+            else if (data.type == "CODE_UPDATE") {
                 SetCommonValue(data.payload.changes);
                 console.log(editorinput);
+            }
+            else if (data.type == "TERMINAL_CODE_UPDATE") {
+                setTOutput(data.payload.code);
             }
             else {
                 console.log("erro while recieving data from ws in FE");
             }
 
         }
-
-    }
+    },[])
 
     useEffect(() => {
-
         async function dbcall() {
             try {
                 const CreateRoom = await axios.post("http://localhost:3001/teacher/createroom", {}, {
@@ -91,25 +136,7 @@ export default function MainBody() {
                         teacher_id: teacher_id,
                         room_id: room_id
                     }))
-                    ws.onmessage = (event) => {
-                        // console.log(event);
-                        let data = JSON.parse(event.data);
-                        // console.log(data);
-                        if (data.type == "ROOM_CREATED") {
-                            alert("room has been created");
-                            setroom_id(room_id);
-                            settrigger(trigger => false);
-                            return;
-                        }
-                        else if (data.type == "CODE_UPDATE") {
-                            SetCommonValue(data.payload.changes);
-                            console.log(editorinput);
-                        }
-                        else {
-                            console.log("erro while recieving data from ws in FE");
-                        }
-
-                    }
+                    setroom_id(room_id);
                 }
             } catch (e) {
                 // if (e.response.status == 401) {
@@ -130,34 +157,32 @@ export default function MainBody() {
                     <div className="h-screen bg-red-700 w-2/5 ">
                         <Sidebar />
                     </div>
-
-                    {/* <div className="flex"> */}
-                        <div className="h-screen grow-4 w-10 flex-col ">
-                            <Editor
-                                onMount={EditorDidMount}
-                                defaultLanguage="javascript" defaultValue="You can code here in JavaScript"
-                                value={CommonValue}
-                                height = "80vh"
-                                theme = 'hc-black'
-                            />
-                            <div>
-                                button comes here
-                            </div>
-                            <div>
-                                <XTerminal/>
-                            </div>
+                    <div className="h-screen grow-4 w-10 flex-col ">
+                        <Editor
+                            onMount={EditorDidMount}
+                            defaultLanguage="javascript" defaultValue=" // You can code here in JavaScript"
+                            value={CommonValue}
+                            height="70vh"
+                            theme='vs-dark'
+                        />
+                        <div className="flex justify-end h-10">
+                            <button className="bg-[#4079da] mr-10 rounded p-2"
+                                onClick={() => { compileCode() }}
+                            ><label className="text-white"> Run Code </label></button>
                         </div>
-                    {/* </div> */}
-
+                        <div>
+                            <XTerminal OutputCode={TOutput} />
+                        </div>
+                    </div>
                 </div>
                 <div className="h-screen w-1/4 bg-orange-300">
                     <Videostream />
                     <button
                         onClick={() => { settrigger(!trigger) }}
-                        className="border border-blue-900 bg-red-700">Create Room
+                        className="bg-[#4079da] mr-10 rounded p-2"><label className="text-white">Create Room</label>
                     </button>
                     <div>
-                        {roomid ? <h2> Room Created !</h2> : <h2> Create a Room </h2>}
+                        {roomid ? <h2> Room Created !</h2> : null}
                         <div className="flex">
                             <div>
                                 <h3 className="bg-white border border-e-black w-9/10">{roomid}</h3>
@@ -177,7 +202,10 @@ export default function MainBody() {
                         type="text" placeholder="Enter Room Id to Join"
                         onChange={(e) => { SetJoinRoomId(JoinRoomId => e.target.value) }}
                     ></input>
-                    <button className="bg-red-600" onClick={() => { JoinRoom() }}> Join Room</button>
+                    <button className="bg-[#4079da] mr-10 rounded p-2" onClick={() => { JoinRoom() }}> <label className="text-white">Join Room</label> </button>
+                    <div>
+                        <label >{JoinRoomId ? "Room Id :" + JoinRoomId : (roomid ? "Room Id : " + roomid : null)}</label>
+                    </div>
                 </div>
 
             </div>

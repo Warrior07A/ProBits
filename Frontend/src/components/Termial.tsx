@@ -3,8 +3,13 @@ import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import "xterm/css/xterm.css";
 
-export default function XTerminal() {
+
+export default function XTerminal({ OutputCode } : { OutputCode: string }) {
+
+    console.log("terminal changed ");
     const terminalRef = useRef<HTMLDivElement>(null);
+    const termInstance = useRef<Terminal | null>(null);
+
     useEffect(() => {
         const term = new Terminal({
             cursorBlink: true,
@@ -17,18 +22,19 @@ export default function XTerminal() {
                 cursor: "#ffffff"
             }
         });
-        
-        term.reset();
+        termInstance.current = term;
         const fitAddon = new FitAddon();
         term.loadAddon(fitAddon);
-
+        
         term.open(terminalRef.current!);
         fitAddon.fit();
-        window.addEventListener("resize", () => fitAddon.fit());
-        term.write("Available commands: help, clear\r\n$ ");
-        let command = "";
+        
+        console.log(OutputCode);
+        term.write(OutputCode != "" ? OutputCode : "Available Commands : help , clear");
+        
+        let command = "hi there"
         term.onData((data) => {
-
+            term.clear();
             // ENTER
             if (data === "\r") {
                 term.write("\r\n");
@@ -65,6 +71,15 @@ export default function XTerminal() {
             term.dispose();
         }
     }, []);
+    
+    useEffect(()=>{
+        if (termInstance.current && OutputCode){
+            termInstance.current.clear();
+            termInstance.current.writeln("");
+            const formattedOutput = OutputCode.replace(/\n/g , "\r\n");
+            termInstance.current.write(formattedOutput);
+        }
+    },[OutputCode])
 
     return <div className="border border-black"
         ref={terminalRef} style={{ height: "200px", width: "100%" }} />;
