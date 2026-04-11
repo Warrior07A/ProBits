@@ -3,7 +3,7 @@ import Sidebar from "./Sidebar";
 import Videostream from "./Videostream";
 import axios from "axios";
 import { Editor } from "@monaco-editor/react";
-import XTerminal from "./Termial";
+import XTerminal from "./Terminal";
 
 const ws = new WebSocket("ws://localhost:8080");
 
@@ -96,7 +96,7 @@ export default function MainBody() {
 
     }
     //useEffect for attaching ws listener for all users irrespective of their way of entering in a room.
-    useEffect(()=>{
+    useEffect(() => {
         ws.onmessage = (event) => {
             // console.log(event);
             let data = JSON.parse(event.data);
@@ -118,7 +118,7 @@ export default function MainBody() {
             }
 
         }
-    },[])
+    }, [])
 
     useEffect(() => {
         async function dbcall() {
@@ -154,9 +154,6 @@ export default function MainBody() {
             <div className="flex gap-10 ">
                 <div className="h-screen w-3/4 flex ">
 
-                    <div className="h-screen bg-red-700 w-2/5 ">
-                        <Sidebar />
-                    </div>
                     <div className="h-screen grow-4 w-10 flex-col ">
                         <Editor
                             onMount={EditorDidMount}
@@ -175,7 +172,7 @@ export default function MainBody() {
                         </div>
                     </div>
                 </div>
-                <div className="h-screen w-1/4 bg-orange-300">
+                <div className="h-screen w-1/4 bg-[#161b1d]">
                     <Videostream />
                     <button
                         onClick={() => { settrigger(!trigger) }}

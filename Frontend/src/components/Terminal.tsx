@@ -82,5 +82,5 @@ export default function XTerminal({ OutputCode } : { OutputCode: string }) {
     },[OutputCode])
 
     return <div className="border border-black"
-        ref={terminalRef} style={{ height: "200px", width: "100%" }} />;
+        ref={terminalRef} style={{ height: "300px", width: "100%" }} />;
 }
