@@ -2,7 +2,7 @@
 
 [![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/Warrior07A/ProBits)
 
-ProBits is a full-stack, real-time collaborative platform designed for technical interviews. It allows an interviewer (teacher) to create a shared session where a candidate (student) can join. Both participants share a live code editor, an output terminal, and a video stream, creating an integrated environment for assessing coding skills.
+**ProBits** is a next-generation, real-time collaborative platform engineered to elevate the technical interview and pair programming experience. By providing a synchronized, interactive workspace, it seamlessly bridges the gap between interviewers and candidates. Featuring blazing-fast code synchronization powered by the Monaco Editor, secure remote code execution, a shared live terminal, and integrated video streaming, ProBits delivers a frictionless, immersive environment for evaluating technical agility and collaborating on complex algorithms.
 
 ## Key Features
 

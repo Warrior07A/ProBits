@@ -1,20 +1,25 @@
-// import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Dashboard from "./Pages/Dashboard";
+import Signup from "./Pages/Signup";
+import Signin from "./Pages/Signin";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
     <>
-    <div>
-      <Dashboard/>
-    {/* <BrowserRouter> */}
-      {/* <Routes> */}
-        {/* <Route path = "/signup" />
-        <Route path = "/signin"/> */}
-        {/* <Route path = "/" element = {<Dashboard/>} /> */}
-      {/* </Routes> */}
-    {/* </BrowserRouter> */}
-    </div>
-    {/* <Dashboard /> */}
+      <div>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/ide" element={<Dashboard />} />
+            </Route>
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/signin" element={<Signin />} />
+            <Route path="*" element={<Signup />}>
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </div>
     </>
   )
 }

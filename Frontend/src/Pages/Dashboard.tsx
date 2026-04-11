@@ -4,10 +4,10 @@ import Navbar from "@/components/Navbar";
 export default function Dashboard() {
     return (
         <>
-            <div className="w-1000 h-10">
+            <div className="w-full">
                 <Navbar />
             </div>
-            <div>
+            <div className="w-full">
                 <MainBody />
             </div>
         </>
