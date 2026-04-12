@@ -4,8 +4,10 @@ import Videostream from "./Videostream";
 import axios from "axios";
 import { Editor } from "@monaco-editor/react";
 import XTerminal from "./Terminal";
+import { toast } from "react-toastify";
+import { BE, PORT } from "@/Pages/Signin";
 
-const ws = new WebSocket("ws://localhost:8080");
+const ws = new WebSocket("wss://" + PORT);
 
 export default function MainBody() {
     const [trigger, settrigger] = useState(false);
@@ -72,16 +74,16 @@ export default function MainBody() {
 
     async function JoinRoom() {
         if (JoinRoomId == "") {
-            return alert("Enter a valid room id");
+            return toast.error("Enter a valid room id");
         }
-        const res = await axios.put("http://localhost:3001/user/join?roomId=" + JoinRoomId, {}, {
+        const res = await axios.put("https://" + BE + "/user/join?roomId=" + JoinRoomId, {}, {
             headers: {
                 Authorization: localStorage.getItem("Authorization")
             }
         });
         console.log(res);
         if (res.status == 201) {
-            alert("You have joined the Room");
+            toast.success("You have joined the Room")
             ws.send(JSON.stringify({
                 type: "JOIN_ROOM",
                 student_id: res.data.student_id,
@@ -91,7 +93,7 @@ export default function MainBody() {
         else if (res.status == 200) {
             console.log(JoinRoomId);
             console.log(roomid);
-            alert("Welcome back");
+            toast.success("Welcome Back")
         }
 
     }
@@ -99,10 +101,11 @@ export default function MainBody() {
     useEffect(() => {
         ws.onmessage = (event) => {
             // console.log(event);
+            
             let data = JSON.parse(event.data);
             // console.log(data);
             if (data.type == "ROOM_CREATED") {
-                alert("room has been created");
+                toast.success("Room Created");
                 settrigger(trigger => false);
                 return;
             }
@@ -123,7 +126,7 @@ export default function MainBody() {
     useEffect(() => {
         async function dbcall() {
             try {
-                const CreateRoom = await axios.post("http://localhost:3001/teacher/createroom", {}, {
+                const CreateRoom = await axios.post("https://" + BE + "/teacher/createroom", {}, {
                     headers: {
                         Authorization: localStorage.getItem("Authorization")
                     }
@@ -140,7 +143,7 @@ export default function MainBody() {
                 }
             } catch (e) {
                 // if (e.response.status == 401) {
-                return alert("ADMIN ACCESS ONLY" + e);
+                return toast.error("Access Denied");
                 // }
             }
         }
@@ -153,7 +156,6 @@ export default function MainBody() {
         <>
             <div className="flex gap-10 ">
                 <div className="h-screen w-3/4 flex ">
-
                     <div className="h-screen grow-4 w-10 flex-col ">
                         <Editor
                             onMount={EditorDidMount}
@@ -188,7 +190,7 @@ export default function MainBody() {
                                 roomid ?
                                     <div>
                                         <button
-                                            onClick={() => { navigator.clipboard.writeText(roomid), alert("Copied to clipboard") }}
+                                            onClick={() => { navigator.clipboard.writeText(roomid), toast.success("Copied to Clipboard") }}
                                             className="bg-white"> Copy </button>
                                     </div> : ""
                             }

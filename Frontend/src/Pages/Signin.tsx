@@ -1,6 +1,9 @@
 import axios from "axios"
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { toast } from "react-toastify";
+export const FE = "still-dozens-hearings-raid.trycloudflare.com";
+export const BE = "dollar-adjusted-signals-void.trycloudflare.com";
 
 export default function Signin() {
     const [email, setEmail] = useState("");
@@ -11,14 +14,15 @@ export default function Signin() {
     function errorHandler() {
         function emailVerify() {
             if (!email.includes("@")) {
-                alert("Inavlid email");
+                 toast.error("Invalid Email!" );
+                 setEmail("");
                 return 0;
             }
             return 1;
         }
         function passwordVerify() {
             if (password.length < 6) {
-                alert("Password must be of 6 characters");
+                toast.error("Password must be at least 6 characters");
                 return 0;
             }
             return 1;
@@ -30,25 +34,40 @@ export default function Signin() {
         const Handler = errorHandler();
         if (!Handler.emailVerify() || !Handler.passwordVerify()) return;
         if (email == "" || password == "") {
-            alert("all input fields must be filled")
+            toast.error("All input fields must be filled");
             return;
         }   
-        const res = await axios.post("http://localhost:3001/api/auth/login", {
-            email: email,
-            password: password
-        })
-        if (res.status == 200) {
-            console.log(res);
-            localStorage.setItem("Authorization", "Bearer " + res.data.data.token)
-            alert("you have logged in successfully");
-            navigate("/ide");
+        try{
+            const res = await axios.post("https://" + BE + "/api/auth/login", {
+                email: email,
+                password: password
+            })
+            if (res.status == 200) {
+                console.log(res);
+                localStorage.setItem("Authorization", "Bearer " + res.data.data.token)
+                toast.success("you have logged in successfully");
+                setTimeout(()=>{
+                        navigate("/ide");
+                },1000)
+            }
         }
-        console.log(res);
+        catch(e){
+            if (e.status == 401){
+                toast.error("Incorrect Email or Password")
+                setEmail("");
+                setPassword("");
+            }
+
+        }
     }
     return (
         <>
             <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl font-extrabold text-gray-900">Sign In</h2>
+
+                    </div>
                     <div className="flex flex-col gap-6">
                         <div className="">
                             <div className="mb-1">
@@ -56,7 +75,9 @@ export default function Signin() {
                             </div>
                             <input onChange={(e) => { setEmail(e.target.value) }}
                                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b66b1] focus:border-transparent outline-none transition duration-200 ease-in-out"
-                                type="text" placeholder="enter your email"></input>
+                                type="text" placeholder="enter your email"
+                                value = {email}
+                                ></input>
                         </div>
                         <div className="">
                             <div className="mb-1">
@@ -64,7 +85,7 @@ export default function Signin() {
                             </div>
                             <input onChange={(e) => { setPassword(e.target.value) }}
                                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b66b1] focus:border-transparent outline-none transition duration-200 ease-in-out"
-                                type="text" placeholder="enter your password"></input>
+                                type="password" placeholder="enter your password" value = {password}></input>
                         </div>
                         <div className="mt-2">
                             <div>

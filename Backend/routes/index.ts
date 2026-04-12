@@ -12,7 +12,9 @@ const app = express();
 const SECRET = process.env.JWT_SECRET ?? "changeme_in_prod";
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: "*"
+}));
 // ── helpers ──────────────────────────────────────────────────────────────────
 function ferr(msg: string, code: number, res: Response) {
   return res.status(code).json({ success: false, data: null, error: msg });
@@ -60,7 +62,7 @@ app.post("/api/auth/login", async (req: Request, res: Response) => {
   if (!parsed.success) return ferr("INVALID_REQUEST", 400, res);
 
   const user = await prisma.users.findUnique({
-    where: { email: parsed.data.email },
+    where: { email: parsed.data.email , password :parsed.data.password},
   });
   if (!user) return ferr("INVALID_CREDENTIALS", 401, res);
 
@@ -148,6 +150,18 @@ app.put("/user/join", authMiddleware(), async (req: Request, res: Response) => {
   })
 })
 
+app.get("/RTCtoken" , authMiddleware() ,async(req : Request , res : Response)=>{
+  let id = req.id
+  let role = req.role
+  if (role != "teacher") {
+    return ferr("only teacher ACCESS allowed", 401, res);
+  }
+  if (!id || !role) {
+    return ferr("ID OR ROLE MISSING", 404, res);
+  }
+  
+
+})
 
 // ── start ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT ?? 3001;

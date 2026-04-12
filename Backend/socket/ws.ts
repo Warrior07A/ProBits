@@ -70,7 +70,9 @@ wss.on("connection", (ws: WebSocket, req: Request) => {
                 })
             }
             else {
-                ws.send("NO SUCH ROOM FOUND");
+                ws.send(JSON.stringify({
+                    type : "LOCAL_RUN"
+                }));
                 console.log("not found");
             }
             console.log(memory.size);
