@@ -37,7 +37,7 @@ export default function Signup() {
             return;
         }
         try {
-            const res = await axios.post("https://" + BE + "/api/auth/signup", {
+            const res = await axios.post("http://" + BE + "/api/auth/signup", {
                 email: email,
                 password: password
             })

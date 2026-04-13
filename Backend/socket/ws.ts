@@ -8,25 +8,36 @@ type obj = {
     student_ws?: WebSocket
 }
 
+type Client = {
+    ws: WebSocket,
+    username: string
+}
 
-let memory: Map<string, Set<WebSocket>> = new Map();
+let memory: Map<string, Set<Client>> = new Map();
 
 let no = 1;
 wss.on("connection", (ws: WebSocket, req: Request) => {
     console.log("connection no." + no + "made");
     no++;
     ws.on("message", (data: any) => {
-        // console.log("message received");
-        data = JSON.parse(data);
-        // console.log(data);
-        if (data.type == "CREATE_ROOM") {
-            let obj = {
-                teacher_ws: ws
-            }
-            memory.set(data.room_id, new Set<WebSocket>());
-            memory.get(data.room_id)!.add(ws);
 
-            console.log("Room create logic reached");
+        data = JSON.parse(data);
+        console.log(data);
+        if (data.type == "JOIN_ROOM") {
+            let obj = {
+                ws: ws,
+                username: data.payload.username,
+            }
+            let room_find = memory.get(data.payload.room_id);
+            if (room_find){
+                room_find.add(obj);
+            }
+            else{
+                memory.set(data.payload.room_id, new Set<Client>());
+                memory.get(data.payload.room_id)!.add(obj);
+            }
+
+            console.log("Room has been created");
             ws.send(
                 JSON.stringify(
                     {
@@ -35,32 +46,28 @@ wss.on("connection", (ws: WebSocket, req: Request) => {
                     }
                 )
             );
+            console.log(memory);
         }
-        else if (data.type == "JOIN_ROOM") {
-            const roomexist = memory.get(data.room_id);
-            if (roomexist) {
-                roomexist.add(ws);
-                ws.send(
-                    JSON.stringify({
-                        type: "updated websockets",
-                        payload: {}
-                    })
-                )
-                console.log(memory.size)
-                console.log("hello");
-            }
-            else {
-                ws.send("Room doesnot exist");
-            }
-            // console.log(memory.get(data.roomid)!.size);
+        else if (data.type == "VALID_ROOM") {
+            // console.log(data.payload.roomid);
+            // console.log(memory);
+            let roomid = memory.get(data.payload.roomid);
+            // console.log(roomid);
+            if (roomid) {
+                ws.send(JSON.stringify({
+                    type: "ROOM_VALID"
+                }))
+            } else ws.send(JSON.stringify({
+                type: "ROOM_INVALID"
+            }))
         }
         else if (data.type == "CODE_SEND") {
             let roomid = data.payload.room_id;
             let CurrRoom = memory.get(roomid);
             if (CurrRoom) {
                 CurrRoom.forEach((ws_conn) => {
-                    if (ws_conn != ws) {
-                        ws_conn.send(JSON.stringify({
+                    if (ws_conn.ws != ws) {
+                        ws_conn.ws.send(JSON.stringify({
                             type: "CODE_UPDATE",
                             payload: {
                                 changes: data.payload.changes
@@ -71,42 +78,53 @@ wss.on("connection", (ws: WebSocket, req: Request) => {
             }
             else {
                 ws.send(JSON.stringify({
-                    type : "LOCAL_RUN"
+                    type: "LOCAL_RUN"
                 }));
                 console.log("not found");
             }
-            console.log(memory.size);
-            // console.log(memory.get(data.roomid)!.size);
         }
         else if (data.type == "TERMINAL_CODE") {
             let room_id = data.payload.room_id;
             let CurRoom = memory.get(room_id);
             if (CurRoom) {
-                CurRoom.forEach((ws_conn)=>{
-                    if (ws_conn != ws){
-                        ws_conn.send(JSON.stringify({
-                            type : "TERMINAL_CODE_UPDATE",
-                            payload :{
-                                code : data.payload.code
+                CurRoom.forEach((ws_conn) => {
+                    if (ws_conn.ws != ws) {
+                        ws_conn.ws.send(JSON.stringify({
+                            type: "TERMINAL_CODE_UPDATE",
+                            payload: {
+                                code: data.payload.code
                             }
                         }))
                     }
                 })
-            }else{
+            } else {
                 ws.send(JSON.stringify({
-                    msg : "no such room exists"
+                    msg: "no such room exists"
                 }))
+            }
+        }
+        else if (data.type == "CREATE_ROOM") {
+            let room_id = data.room_id || data.payload?.room_id;
+            if (room_id) {
+                if (!memory.has(room_id)) {
+                    memory.set(room_id, new Set<Client>());
+                }
+                ws.send(JSON.stringify({
+                    type: "ROOM_CREATED",
+                    payload: {}
+                }));
+                console.log("Room created via CREATE_ROOM");
             }
         }
         else {
             ws.send(JSON.stringify({
-                msg: "this is out of my bounds in websockets brooo"
+                msg: "messed up in ws"
             }))
         }
     })
     ws.on("close", () => {
-        const roomId = (ws).roomId;
-        console.log("onclosing roomid is " + roomId);
+        // const roomId = (ws).roomId;
+        // console.log("onclosing roomid is " + roomId);
     })
 }
 

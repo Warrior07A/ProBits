@@ -2,8 +2,14 @@ import axios from "axios"
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
-export const FE = "still-dozens-hearings-raid.trycloudflare.com";
-export const BE = "dollar-adjusted-signals-void.trycloudflare.com";
+// export const FE = "liverpool-thick-jaguar-gage.trycloudflare.com";
+// export const BE = "twice-technological-planets-other.trycloudflare.com";
+// export const WS = "affects-oecd-otherwise-oklahoma.trycloudflare.com";
+export const FE = "localhost:3000"
+export const BE = "localhost:3001"
+export const WS = "localhost:8080"; 
+export const ws = new WebSocket("ws://" + WS);
+
 
 export default function Signin() {
     const [email, setEmail] = useState("");
@@ -38,7 +44,7 @@ export default function Signin() {
             return;
         }   
         try{
-            const res = await axios.post("https://" + BE + "/api/auth/login", {
+            const res = await axios.post("http://" + BE + "/api/auth/login", {
                 email: email,
                 password: password
             })
@@ -47,7 +53,7 @@ export default function Signin() {
                 localStorage.setItem("Authorization", "Bearer " + res.data.data.token)
                 toast.success("you have logged in successfully");
                 setTimeout(()=>{
-                        navigate("/ide");
+                        navigate("/");
                 },1000)
             }
         }

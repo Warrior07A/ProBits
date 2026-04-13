@@ -1,9 +1,9 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Dashboard from "./Pages/Dashboard";
 import Signup from "./Pages/Signup";
 import Signin from "./Pages/Signin";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ToastContainer } from "react-toastify";
+import Home from "./Pages/Home";
 
 function App() {
   return (
@@ -13,17 +13,17 @@ function App() {
           <ToastContainer position="top-right" autoClose={3000} />
           <Routes>
             <Route element={<ProtectedRoute />}>
-              <Route path="/ide" element={<Dashboard />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/:roomid" element={<Home />} />
             </Route>
             <Route path="/signup" element={<Signup />} />
             <Route path="/signin" element={<Signin />} />
-            <Route path="*" element={<Signup />}>
-            </Route>
+            <Route path="*" element={<Home />} />
           </Routes>
         </BrowserRouter>
       </div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

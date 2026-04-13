@@ -5,38 +5,68 @@ import axios from "axios";
 import { Editor } from "@monaco-editor/react";
 import XTerminal from "./Terminal";
 import { toast } from "react-toastify";
-import { BE, PORT } from "@/Pages/Signin";
-
-const ws = new WebSocket("wss://" + PORT);
+import { ws } from "@/Pages/Signin";
+import { useLocation } from "react-router";
 
 export default function MainBody() {
-    const [trigger, settrigger] = useState(false);
+    // const [trigger, settrigger] = useState(false);
     let [roomid, setroom_id] = useState("");
     let [JoinRoomId, SetJoinRoomId] = useState("");
     let activeRoom = useRef("");
     const editorinput = useRef<string | null>(null);
+    const editorRef = useRef<any>(null);
+    const isRemoteUpdate = useRef(false);
     const [CommonValue, SetCommonValue] = useState("");
     const [TOutput, setTOutput] = useState("");
-
+    const [language, setLanguage] = useState("javascript");
+    const [theme, setTheme] = useState("vs-dark");
+    const [fontSize, setFontSize] = useState(14);
+    let location = useLocation();
 
     useEffect(() => {
-        activeRoom.current = roomid
-    }, [roomid])
-    useEffect(() => {
-        activeRoom.current = JoinRoomId
-    }, [JoinRoomId])
+        ws.onmessage = (event) => {
+            console.log(event);
+            let data = JSON.parse(event.data);
+            console.log(data);
+            if (data.type == "CODE_UPDATE") {
+                SetCommonValue(data.payload.changes);
+                if (editorRef.current) {
+                    const currentCode = editorRef.current.getValue();
+                    if (currentCode !== data.payload.changes) {
+                        isRemoteUpdate.current = true;
+                        editorRef.current.setValue(data.payload.changes);
+                        isRemoteUpdate.current = false;
+                    }
+                }
+            }
+            else if (data.type == "TERMINAL_CODE_UPDATE") {
+                setTOutput(data.payload.code);
+            }
+            else {
+                
+            }
+        }
+    }, [])
+
+    useEffect(()=>{
+        // console.log(location);
+        let param_roomid = location.pathname.split("/").pop();
+        if (param_roomid){
+            activeRoom.current = param_roomid;
+            // console.log("roomid", activeRoom);
+        }
+    },[location])
+
 
 
     async function compileCode() {
-        console.log(editorinput.current);
-        console.log(CommonValue);
         let Compilereq = await axios.post("https://judge0.nagmaniupadhyay.com.np/submissions?wait=true", {
             "language_id": 63,
             "source_code": editorinput.current || ""
         })
         let FinalCodeOutput = "";
         if (Compilereq.data.status.id == 3) {
-            console.log(Compilereq.data.stdout);
+           
             FinalCodeOutput = Compilereq.data.stdout;
         }
         else {
@@ -44,8 +74,6 @@ export default function MainBody() {
         }
 
         setTOutput(FinalCodeOutput);
-        console.log(Compilereq);
-
         ws.send(JSON.stringify({
             type: "TERMINAL_CODE",
             payload: {
@@ -54,160 +82,81 @@ export default function MainBody() {
             }
         }))
 
-        console.log("ran here");
+        console.log(CommonValue);
     }
 
-    const EditorDidMount = (editor: editor.IStandaloneCodeEditor) => {
-        editor.onDidChangeModelContent((event) => {
+    const EditorDidMount = (editor: any) => {
+        editorRef.current = editor;
+        editor.onDidChangeModelContent(() => {
+            if (isRemoteUpdate.current) return;
             const code = editor.getValue();
             editorinput.current = code;
-            const actroom = activeRoom.current
+            // console.log("ws", activeRoom.current, editorinput.current);
             ws.send(JSON.stringify({
                 type: "CODE_SEND",
                 payload: {
-                    room_id: actroom,
+                    room_id: activeRoom.current,
                     changes: editorinput.current
                 }
             }))
         })
     }
 
-    async function JoinRoom() {
-        if (JoinRoomId == "") {
-            return toast.error("Enter a valid room id");
-        }
-        const res = await axios.put("https://" + BE + "/user/join?roomId=" + JoinRoomId, {}, {
-            headers: {
-                Authorization: localStorage.getItem("Authorization")
-            }
-        });
-        console.log(res);
-        if (res.status == 201) {
-            toast.success("You have joined the Room")
-            ws.send(JSON.stringify({
-                type: "JOIN_ROOM",
-                student_id: res.data.student_id,
-                room_id: JoinRoomId,
-            }))
-        }
-        else if (res.status == 200) {
-            console.log(JoinRoomId);
-            console.log(roomid);
-            toast.success("Welcome Back")
-        }
-
-    }
     //useEffect for attaching ws listener for all users irrespective of their way of entering in a room.
-    useEffect(() => {
-        ws.onmessage = (event) => {
-            // console.log(event);
-            
-            let data = JSON.parse(event.data);
-            // console.log(data);
-            if (data.type == "ROOM_CREATED") {
-                toast.success("Room Created");
-                settrigger(trigger => false);
-                return;
-            }
-            else if (data.type == "CODE_UPDATE") {
-                SetCommonValue(data.payload.changes);
-                console.log(editorinput);
-            }
-            else if (data.type == "TERMINAL_CODE_UPDATE") {
-                setTOutput(data.payload.code);
-            }
-            else {
-                console.log("erro while recieving data from ws in FE");
-            }
-
-        }
-    }, [])
-
-    useEffect(() => {
-        async function dbcall() {
-            try {
-                const CreateRoom = await axios.post("https://" + BE + "/teacher/createroom", {}, {
-                    headers: {
-                        Authorization: localStorage.getItem("Authorization")
-                    }
-                })
-                if (CreateRoom.status == 201) {
-                    let teacher_id = CreateRoom.data.teacher_id;
-                    let room_id = CreateRoom.data.roomid;
-                    ws.send(JSON.stringify({
-                        type: "CREATE_ROOM",
-                        teacher_id: teacher_id,
-                        room_id: room_id
-                    }))
-                    setroom_id(room_id);
-                }
-            } catch (e) {
-                // if (e.response.status == 401) {
-                return toast.error("Access Denied");
-                // }
-            }
-        }
-        if (trigger) {
-            dbcall();
-        }
-    }, [trigger])
+    
+   
 
     return (
-        <>
-            <div className="flex gap-10 ">
-                <div className="h-screen w-3/4 flex ">
-                    <div className="h-screen grow-4 w-10 flex-col ">
-                        <Editor
-                            onMount={EditorDidMount}
-                            defaultLanguage="javascript" defaultValue=" // You can code here in JavaScript"
-                            value={CommonValue}
-                            height="70vh"
-                            theme='vs-dark'
-                        />
-                        <div className="flex justify-end h-10">
-                            <button className="bg-[#4079da] mr-10 rounded p-2"
-                                onClick={() => { compileCode() }}
-                            ><label className="text-white"> Run Code </label></button>
-                        </div>
-                        <div>
-                            <XTerminal OutputCode={TOutput} />
-                        </div>
-                    </div>
-                </div>
-                <div className="h-screen w-1/4 bg-[#161b1d]">
-                    <Videostream />
-                    <button
-                        onClick={() => { settrigger(!trigger) }}
-                        className="bg-[#4079da] mr-10 rounded p-2"><label className="text-white">Create Room</label>
-                    </button>
-                    <div>
-                        {roomid ? <h2> Room Created !</h2> : null}
-                        <div className="flex">
-                            <div>
-                                <h3 className="bg-white border border-e-black w-9/10">{roomid}</h3>
-                            </div>
-                            {
-                                roomid ?
-                                    <div>
-                                        <button
-                                            onClick={() => { navigator.clipboard.writeText(roomid), toast.success("Copied to Clipboard") }}
-                                            className="bg-white"> Copy </button>
-                                    </div> : ""
-                            }
-                        </div>
-                    </div>
-                    <input
-                        className="border border-black bg-amber-50"
-                        type="text" placeholder="Enter Room Id to Join"
-                        onChange={(e) => { SetJoinRoomId(JoinRoomId => e.target.value) }}
-                    ></input>
-                    <button className="bg-[#4079da] mr-10 rounded p-2" onClick={() => { JoinRoom() }}> <label className="text-white">Join Room</label> </button>
-                    <div>
-                        <label >{JoinRoomId ? "Room Id :" + JoinRoomId : (roomid ? "Room Id : " + roomid : null)}</label>
-                    </div>
-                </div>
+    <div className="flex h-screen bg-[#0b1220] text-white">
 
+        {/* LEFT SIDE */}
+        <div className="w-3/4 flex flex-col p-4 gap-4">
+
+            {/* Editor Card */}
+            <div className="bg-[#0f172a] rounded-xl shadow-lg border border-[#1f2937] overflow-hidden">
+
+                <Editor
+                    onMount={EditorDidMount}
+                    defaultLanguage="javascript"
+                    defaultValue="// You can code here in JavaScript"
+                    value={CommonValue}
+                    height="55vh"
+                    theme="vs-dark"
+                />
+
+                {/* Run Button */}
+                <div className="flex justify-end p-3 bg-[#020617] border-t border-[#1f2937]">
+                    <button
+                        className="bg-blue-600 hover:bg-blue-700 transition px-4 py-2 rounded-md font-medium shadow-md"
+                        onClick={compileCode}
+                    >
+                        ▶ Run Code
+                    </button>
+                </div>
             </div>
-        </>
-    )
+
+            {/* Terminal */}
+            <div className="bg-black rounded-xl border border-[#1f2937] shadow-md p-3">
+                <XTerminal OutputCode={TOutput} />
+            </div>
+
+        </div>
+
+        {/* RIGHT PANEL */}
+        <div className="w-1/4 bg-[#020617] border-l border-[#1f2937] flex flex-col">
+
+            <div className="p-4 border-b border-[#1f2937]">
+                <h2 className="text-xl font-semibold text-blue-400">
+                    Participants
+                </h2>
+            </div>
+
+            <div className="flex-1 p-4 text-gray-400">
+                {/* future participants list */}
+                No participants yet
+            </div>
+
+        </div>
+    </div>
+);
 }
