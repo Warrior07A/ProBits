@@ -9,7 +9,6 @@ import { ws } from "@/Pages/Signin";
 import { useLocation } from "react-router";
 
 export default function MainBody() {
-    // const [trigger, settrigger] = useState(false);
     let [roomid, setroom_id] = useState("");
     let [JoinRoomId, SetJoinRoomId] = useState("");
     let activeRoom = useRef("");
@@ -18,9 +17,6 @@ export default function MainBody() {
     const isRemoteUpdate = useRef(false);
     const [CommonValue, SetCommonValue] = useState("");
     const [TOutput, setTOutput] = useState("");
-    const [language, setLanguage] = useState("javascript");
-    const [theme, setTheme] = useState("vs-dark");
-    const [fontSize, setFontSize] = useState(14);
     let location = useLocation();
 
     useEffect(() => {
@@ -102,7 +98,7 @@ export default function MainBody() {
         })
     }
 
-    //useEffect for attaching ws listener for all users irrespective of their way of entering in a room.
+
     
    
 
