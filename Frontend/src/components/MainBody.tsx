@@ -153,7 +153,7 @@ export default function MainBody() {
 
             <div className="flex-1 p-4 text-gray-400">
                 {/* future participants list */}
-                No participants yet
+               
             </div>
 
         </div>

@@ -1,8 +1,8 @@
-# ProBits - Real-Time Collaborative Interview Platform
+# CodeBridge - Real-Time Collaborative Interview Platform
 
-[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/Warrior07A/ProBits)
+[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/Warrior07A/CodeBridge)
 
-**ProBits** is a next-generation, real-time collaborative platform engineered to elevate the technical interview and pair programming experience. By providing a synchronized, interactive workspace, it seamlessly bridges the gap between interviewers and candidates. Featuring blazing-fast code synchronization powered by the Monaco Editor, secure remote code execution, a shared live terminal, and integrated video streaming, ProBits delivers a frictionless, immersive environment for evaluating technical agility and collaborating on complex algorithms.
+**CodeBridge** is a next-generation, real-time collaborative platform engineered to elevate the technical interview and pair programming experience. By providing a synchronized, interactive workspace, it seamlessly bridges the gap between interviewers and candidates. Featuring blazing-fast code synchronization powered by the Monaco Editor, secure remote code execution, a shared live terminal, and integrated video streaming, CodeBridge delivers a frictionless, immersive environment for evaluating technical agility and collaborating on complex algorithms.
 
 ## Key Features
 
