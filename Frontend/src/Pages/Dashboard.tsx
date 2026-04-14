@@ -45,19 +45,19 @@ export default function Dashboard() {
                 setTOutput(data.payload.code);
             }
             else {
-                
+
             }
         }
     }, [])
 
-    useEffect(()=>{
+    useEffect(() => {
         // console.log(location);
         let param_roomid = location.pathname.split("/").pop();
-        if (param_roomid){
+        if (param_roomid) {
             activeRoom.current = param_roomid;
             // console.log("roomid", activeRoom);
         }
-    },[location])
+    }, [location])
 
 
 
@@ -68,7 +68,7 @@ export default function Dashboard() {
         })
         let FinalCodeOutput = "";
         if (Compilereq.data.status.id == 3) {
-           
+
             FinalCodeOutput = Compilereq.data.stdout;
         }
         else {
@@ -109,107 +109,92 @@ export default function Dashboard() {
 
     return (
         <>
-        <div>
-            <div className="w-full">
-                <div className="h-16 flex items-center justify-between px-8 
+            <div>
+                <div className="w-full">
+                    <div className="h-16 flex items-center justify-between px-8 
                         bg-[#0f172a] text-white shadow-md border-b border-[#1f2937]">
 
 
-            <div className="text-2xl font-bold tracking-wide text-blue-400">
-                CodeBridge
-            </div>
+                        <div className="text-2xl font-bold tracking-wide text-blue-400">
+                            CodeBridge
+                        </div>
 
-            <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-6">
 
-                <select
-                    className="bg-[#1e293b] hover:bg-[#334155] transition px-3 py-1.5 rounded-md text-sm outline-none"
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                >
-                    <option value="javascript">Javascript</option>
-                </select>
+                            <select
+                                className="bg-[#1e293b] hover:bg-[#334155] transition px-3 py-1.5 rounded-md text-sm outline-none"
+                                value={language}
+                                onChange={(e) => setLanguage(e.target.value)}
+                            >
+                                <option value="javascript">Javascript</option>
+                            </select>
 
-                <select
-                    className="bg-[#1e293b] hover:bg-[#334155] transition px-3 py-1.5 rounded-md text-sm outline-none"
-                    value={theme}
-                    onChange={(e) => setTheme(e.target.value)}
-                >
-                    <option value="vs-dark">Dark</option>
-                    <option value="light">Light</option>
-                    <option value="hc-black">HC Black</option>
-                </select>
+                            <select
+                                className="bg-[#1e293b] hover:bg-[#334155] transition px-3 py-1.5 rounded-md text-sm outline-none"
+                                value={theme}
+                                onChange={(e) => setTheme(e.target.value)}
+                            >
+                                <option value="vs-dark">Dark</option>
+                                <option value="light">Light</option>
+                                <option value="hc-black">HC Black</option>
+                            </select>
 
-                <select
-                    className="bg-[#1e293b] hover:bg-[#334155] transition px-3 py-1.5 rounded-md text-sm outline-none"
-                    value={fontSize}
-                    onChange={(e) => setFontSize(Number(e.target.value))}
-                >
-                    {[12,14,16,18,20].map(size => (
-                        <option key={size} value={size}>{size}</option>
-                    ))}
-                </select>
+                            <select
+                                className="bg-[#1e293b] hover:bg-[#334155] transition px-3 py-1.5 rounded-md text-sm outline-none"
+                                value={fontSize}
+                                onChange={(e) => setFontSize(Number(e.target.value))}
+                            >
+                                {[12, 14, 16, 18, 20].map(size => (
+                                    <option key={size} value={size}>{size}</option>
+                                ))}
+                            </select>
 
-            </div>
-        </div> 
-            </div>
-            <div className="w-full">
-               <div className="flex h-screen bg-[#0b1220] text-white">
+                        </div>
+                    </div>
+                </div>
+                <div className="w-full">
+                    <div className="flex h-screen bg-[#0b1220] text-white">
 
-        {/* LEFT SIDE */}
-        <div className="w-3/4 flex flex-col p-4 gap-4">
+                        {/* LEFT SIDE */}
+                        <div className="w-screen flex flex-col p-4 gap-4">
 
-            {/* Editor Card */}
-            <div className="bg-[#0f172a] rounded-xl shadow-lg border border-[#1f2937] overflow-hidden">
+                            {/* Editor Card */}
+                            <div className="bg-[#0f172a] rounded-xl shadow-lg border border-[#1f2937] overflow-hidden">
 
-                <Editor
-                    onMount={EditorDidMount}
-                    defaultLanguage="javascript"
-                    defaultValue="// You can code here in JavaScript"
-                    value={CommonValue}
-                    height="55vh"
-                    theme={theme}
-                    language={language}
-                    options = {{
-                        fontSize : fontSize
-                    }}
-                />
+                                <Editor
+                                    onMount={EditorDidMount}
+                                    defaultLanguage="javascript"
+                                    defaultValue="// You can code here in JavaScript"
+                                    value={CommonValue}
+                                    height="55vh"
+                                    theme={theme}
+                                    language={language}
+                                    options={{
+                                        fontSize: fontSize
+                                    }}
+                                />
 
-                {/* Run Button */}
-                <div className="flex justify-end p-3 bg-[#020617] border-t border-[#1f2937]">
-                    <button
-                        className="bg-blue-600 hover:bg-blue-700 transition px-4 py-2 rounded-md font-medium shadow-md"
-                        onClick={compileCode}
-                    >
-                        ▶ Run Code
-                    </button>
+                                {/* Run Button */}
+                                <div className="flex justify-end p-3 bg-[#020617] border-t border-[#1f2937]">
+                                    <button
+                                        className="bg-blue-600 hover:bg-blue-700 transition px-4 py-2 rounded-md font-medium shadow-md"
+                                        onClick={compileCode}
+                                    >
+                                        ▶ Run Code
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Terminal */}
+                            <div className="bg-black rounded-xl border border-[#1f2937] shadow-md p-3">
+                                <XTerminal OutputCode={TOutput} />
+                            </div>
+
+                        </div>
+
+                    </div>
                 </div>
             </div>
-
-            {/* Terminal */}
-            <div className="bg-black rounded-xl border border-[#1f2937] shadow-md p-3">
-                <XTerminal OutputCode={TOutput} />
-            </div>
-
-        </div>
-
-        {/* RIGHT PANEL */}
-        <div className="w-1/4 bg-[#020617] border-l border-[#1f2937] flex flex-col">
-
-            <div className="p-4 border-b border-[#1f2937]">
-                <h2 className="text-xl font-semibold text-blue-400">
-                    Participants
-                </h2>
-            </div>
-
-            <div className="flex-1 p-4 text-gray-400">
-                {/* future participants list */}
-               
-            </div>
-
-        </div>
-    </div>
-            </div>
-        </div>               
         </>
     )
 }
